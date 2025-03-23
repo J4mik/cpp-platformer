@@ -1,4 +1,4 @@
-#include "src/debug.h"
+#include "src/debug.hpp"
 #include "src/tiles.hpp"
 
 #include <iostream>
