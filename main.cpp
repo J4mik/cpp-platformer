@@ -146,6 +146,17 @@ int main(int argc, char *argv[]) {
 			else if (jsonLVL["level"][i]["type"] == "path") {clipRect.y = 32;}
 			else if (jsonLVL["level"][i]["type"] == "dirt") {clipRect.y = 0;}
 			SDL_RenderCopy(rend, tex, &clipRect, &temp);
+			// colisions
+			if (player.x <= temp.x + temp.w && player.x >= temp.x || player.x + player.w <= temp.x + temp.w && player.x + player.w >= temp.x) {
+				if (player.y <= temp.y + temp.h && player.y >= temp.y || player.y + player.h <= temp.y + temp.h && player.y + player.h >= temp.y) {
+					std::cout << "collision\n";
+					if (player.y + player.h >= temp.y) {
+						std::cout << "elevat\n";
+						playerY = playerY + (player.y + player.h - temp.y);
+						playerVectY = 0;
+					}
+				}
+			}
 		}
 		SDL_RenderPresent(rend);
 
