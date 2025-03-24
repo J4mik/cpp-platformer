@@ -27,6 +27,7 @@ bool RIGHTdown = false;
 float playerX;
 float playerY;
 
+float playerVectX = 0;
 float playerVectY = 0;
 
 float ofsetX;
@@ -114,8 +115,10 @@ int main(int argc, char *argv[]) {
 		if (UPdown == 1 && playerY == 200) {
 			playerVectY = + 14;
 		}
+		playerVectX = playerVectX - (RIGHTdown - LEFTdown) * (rate / 100);
+		playerVectX *= 1 - rate / 100;
 
-		playerX += ((speed * LEFTdown / 500) - (speed * RIGHTdown / 500)) * rate;
+		playerX += playerVectX * rate;
 		playerY += playerVectY / 10 * rate;
 		playerVectY += rate / -15;
 		ofsetX = (1 - rate / 300) * ofsetX + (rate / 300) * playerX;
@@ -158,6 +161,13 @@ int main(int argc, char *argv[]) {
 				}
 			}
 		}
+		player.x = round((SCREEN_WIDTH - player.w) / 2 + ofsetX - playerX);
+		player.y = round((SCREEN_HEIGHT - player.h) / 3 * 2 - playerY + ofsetY);
+
+		if (LEFTdown - RIGHTdown == 1) {flip = 1;}
+		else if (LEFTdown - RIGHTdown == -1) {flip = 0;}
+		if (flip == 1) {SDL_RenderCopyEx(rend, block, NULL, &player, 0, 0, SDL_FLIP_HORIZONTAL);}
+		else {SDL_RenderCopyEx(rend, block, NULL, &player, 0, 0, SDL_FLIP_NONE);}
 		SDL_RenderPresent(rend);
 
 		SDL_Delay(1000/72);
@@ -166,7 +176,7 @@ int main(int argc, char *argv[]) {
 		lastTick = SDL_GetTicks();
 		FPS = 0.9 * FPS + 100 / rate;
 
-		// std::cout << FPS << ",  ";
+		// std::cout << FPS << ",  "; // testing framerate
 		
 	}
 
