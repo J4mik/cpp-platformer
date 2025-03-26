@@ -1,5 +1,5 @@
 #include "src/debug.hpp"
-#include "src/tiles.hpp"
+#include "src/collision.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -46,49 +46,6 @@ struct {
 bool flip = false;
 
 unsigned int len = 0;
-
-void collidetect(SCL_Rect player, json level) {
-	int len = level.size();
-	for (unsigned int i = 0; i < len; ++i) {
-		if (player.x <= temp.x + temp.w && player.x >= temp.x || player.x + player.w <= temp.x + temp.w && player.x + player.w >= temp.x) {
-			if (player.y <= temp.y + temp.h && player.y >= temp.y || player.y + player.h <= temp.y + temp.h && player.y + player.h >= temp.y) {
-				std::cout << "collision\n";
-				overlap.T = player.y + player.h - temp.y;
-				overlap.B = player.y - temp.y - temp.h;
-				overlap.L = player.x + player.w - temp.x;
-				overlap.R = player.x - temp.x - temp.w;
-
-				std::cout << overlap.T << ", " << overlap.B << ", " << overlap.L << ", " << overlap.R << ", \n";
-
-				if (overlap.T > overlap.B && overlap.T > overlap.L && overlap.T > overlap.R) {
-					playerY += player.y - temp.h - temp.y;
-					playerVectY = 0;
-					std::cout << "0\n";
-				}
-				else if (overlap.B > ovelap.T && overlap.B > overlap.R && overlap.B > overlap.L) {
-					playerY -= player.y + player.h - temp.y;
-					playerVectY = 0;
-					jump = true;
-					std::cout << "1\n";
-				}
-				else if (overlap.R > overlap.T && overlap.R > overlap.B && overlap.R > overlap.L) {
-					playerX += player.x - temp.w - temp.x;
-					playerVectX = 0;
-					std::cout << "2\n";
-				}
-				else if (!(overlap.T == overlap.B == overlap.L == overlap.R)) {
-					playerX -= player.x + player.w - temp.x;
-					playerVectX = 0;
-					std::cout << "3\n";
-				}
-				else {
-					std::cout << "error\n";
-				}
-					
-			}
-		}
-	}
-}
 
 int main(int argc, char *argv[]) {
 
@@ -178,6 +135,8 @@ int main(int argc, char *argv[]) {
 		ofsetX = (1 - rate / 300) * ofsetX + (rate / 300) * playerX;
 		ofsetY = (1 - rate / 350) * ofsetY + (rate / 350) * playerY;
 
+		// collision::detect();
+
 		SDL_GetWindowSizeInPixels(win, &SCREEN_WIDTH, &SCREEN_HEIGHT);
 		
 		player.x = round((SCREEN_WIDTH - player.w) / 2 + ofsetX - playerX);
@@ -200,6 +159,7 @@ int main(int argc, char *argv[]) {
 		if (flip == 1) {SDL_RenderCopyEx(rend, block, NULL, &player, 0, 0, SDL_FLIP_HORIZONTAL);}
 		else {SDL_RenderCopyEx(rend, block, NULL, &player, 0, 0, SDL_FLIP_NONE);}
 		len = jsonLVL["level"].size();
+		json level = jsonLVL["level"];
 		for (unsigned int i = 0; i < len; ++i) {
 			temp.x = round(int(jsonLVL["level"][i]["pos"][0]) * 48 + ofsetX);
 			temp.y = round(-int(jsonLVL["level"][i]["pos"][1]) * 48 + ofsetY);
@@ -207,7 +167,9 @@ int main(int argc, char *argv[]) {
 			else if (jsonLVL["level"][i]["type"] == "path") {clipRect.y = 32;}
 			else if (jsonLVL["level"][i]["type"] == "dirt") {clipRect.y = 0;}
 			SDL_RenderCopy(rend, tex, &clipRect, &temp);
-			// colisions
+			if (collision::detect(player.x, player.y, temp.x, temp.y)) {
+				std::cout << "colision\n";
+			}
 			
 		}
 		player.x = round((SCREEN_WIDTH - player.w) / 2 + ofsetX - playerX);
