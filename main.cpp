@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <cmath>
 
 #include "include/JSON/json.hpp"
 
@@ -30,23 +31,35 @@ float playerY;
 float playerVectX = 0;
 float playerVectY = 0;
 
+bool jump = false;
+
 float ofsetX;
 float ofsetY;
+
+struct {
+	int T;
+	int B;
+	int R;
+	int L;
+} overlap;
 
 bool flip = false;
 
 unsigned int len = 0;
 
+void collidetect(SCL_Rect player) {
+	
+}
+
 int main(int argc, char *argv[]) {
 
-	println("running");
+	std::cout << running;
 
 	std::ifstream ifs("test.json");
     json jsonLVL = json::parse(ifs);
     
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-		print("error initializing SDL: ");
-		print(SDL_GetError());
+		std::cerr << "error initialising SDL, Error:" << SDL_GetError << std::endl;
 	}
 	SDL_Window* win = SDL_CreateWindow("Flashblade", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_RESIZABLE);
 
@@ -112,9 +125,11 @@ int main(int argc, char *argv[]) {
         }
 		
 
-		if (UPdown == 1 && playerY == 200) {
+		if (UPdown == 1 && jump == true) {
 			playerVectY = + 14;
 		}
+		jump = false;
+		
 		playerVectX = playerVectX - (RIGHTdown - LEFTdown) * (rate / 100);
 		playerVectX *= 1 - rate / 100;
 
@@ -134,7 +149,11 @@ int main(int argc, char *argv[]) {
 		if (playerY <= 200) {
 			playerY = 200;
 			playerVectY = 0;
+			jump = true;
 		}
+
+		playerVectX = playerVectX - (RIGHTdown - LEFTdown) * (rate / 100);
+		playerVectX *= 1 - rate / 100;
 
 		SDL_RenderClear(rend);
 		if (LEFTdown - RIGHTdown == 1) {flip = 1;}
@@ -153,11 +172,60 @@ int main(int argc, char *argv[]) {
 			if (player.x <= temp.x + temp.w && player.x >= temp.x || player.x + player.w <= temp.x + temp.w && player.x + player.w >= temp.x) {
 				if (player.y <= temp.y + temp.h && player.y >= temp.y || player.y + player.h <= temp.y + temp.h && player.y + player.h >= temp.y) {
 					std::cout << "collision\n";
-					if (player.y + player.h >= temp.y) {
-						std::cout << "elevat\n";
-						playerY = playerY + (player.y + player.h - temp.y);
+					overlap.T = player.y + player.h - temp.y;
+					overlap.B = player.y - temp.y - temp.h;
+					overlap.L = player.x + player.w - temp.x;
+					overlap.R = player.x - temp.x - temp.w;
+
+					std::cout << overlap.T << ", " << overlap.B << ", " << overlap.L << ", " << overlap.R << ", \n";
+
+					if (overlap.T > overlap.B && overlap.T > overlap.L && overlap.T > overlap.R) {
+						playerY += player.y - temp.h - temp.y;
 						playerVectY = 0;
+						std::cout << "0\n";
 					}
+					else if (overlap.B > ovelap.T && overlap.B > overlap.R && overlap.B > overlap.L) {
+						playerY -= player.y + player.h - temp.y;
+						playerVectY = 0;
+						jump = true;
+						std::cout << "1\n";
+					}
+					else if (overlap.R > overlap.T && overlap.R > overlap.B && overlap.R > overlap.L) {
+						playerX += player.x - temp.w - temp.x;
+						playerVectX = 0;
+						std::cout << "2\n";
+					}
+					else if (!(overlap.T == overlap.B == overlap.L == overlap.R)) {
+						playerX -= player.x + player.w - temp.x;
+						playerVectX = 0;
+						std::cout << "3\n";
+					}
+					else {
+						std::cout << "error\n";
+					}
+					
+					// if (player.y + player.h >= temp.y) {
+					// 	std::cout << "elevat\n";
+					// 	playerY = playerY + (player.y + player.h - temp.y);
+					// 	playerVectY = 0;
+					// 	jump = true;
+					// }
+					// else if (player.y <= temp.y + temp.h) {
+					// 	std::cout << "elevat\n";
+					// 	playerY = playerY + (player.y - temp.y - temp.h);
+					// 	playerVectY = 0;
+					// }
+					// if (player.x + player.w >= temp.x) {
+					// 	std::cout << "elevat\n";
+					// 	playerX = playerX + (player.x + player.w - temp.x);
+					// 	playerVectX = 0;
+					// }
+					// else if (player.x <= temp.x + temp.w) {
+					// 	std::cout << "elevat\n";
+					// 	playerX = playerX + (player.x - temp.x - temp.w);
+					// 	playerVectX = 0;
+					// }
+					
 				}
 			}
 		}

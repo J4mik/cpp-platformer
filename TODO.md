@@ -1,32 +1,22 @@
-# TODO
-Today/Tommorow:
- - Signs/boxes small_decor
+# TO DO
 
-Week 2:
- - Lasers/Guns
- - Shop
- - Soundtrack
-Week 3:
- - Ui
-Week 4:
- - Extra Enemies
- - Backgrounds
- - Clouds
+Collisions:
+- x collisions
+- player movement inside AABB collision script
+- sequential movement 5 steps for now
 
-Extra:
- - Shaders
- - Conveyer belts
- - Wind tunnel (to carry you up)
- - Cloth (hard)
+Menu:
+- menu screen with button
+- nice loading / level shanging mechanics
 
-Release:
- - 20 - 30 levels minimum
- - Check & playthrough levels. Check they are possible and check for mishaps.
- - Linux build
+Levels
+- make a large level
 
-Extra
- - Fading sword
- - Moving Spike balls
+Particles
+- explasion
+- fire
 
-Media:
- - Add to AUR and stuff
+Entities
+- slimes
+- mosquitos
+- mushrooms
