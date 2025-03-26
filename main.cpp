@@ -47,8 +47,47 @@ bool flip = false;
 
 unsigned int len = 0;
 
-void collidetect(SCL_Rect player) {
-	
+void collidetect(SCL_Rect player, json level) {
+	int len = level.size();
+	for (unsigned int i = 0; i < len; ++i) {
+		if (player.x <= temp.x + temp.w && player.x >= temp.x || player.x + player.w <= temp.x + temp.w && player.x + player.w >= temp.x) {
+			if (player.y <= temp.y + temp.h && player.y >= temp.y || player.y + player.h <= temp.y + temp.h && player.y + player.h >= temp.y) {
+				std::cout << "collision\n";
+				overlap.T = player.y + player.h - temp.y;
+				overlap.B = player.y - temp.y - temp.h;
+				overlap.L = player.x + player.w - temp.x;
+				overlap.R = player.x - temp.x - temp.w;
+
+				std::cout << overlap.T << ", " << overlap.B << ", " << overlap.L << ", " << overlap.R << ", \n";
+
+				if (overlap.T > overlap.B && overlap.T > overlap.L && overlap.T > overlap.R) {
+					playerY += player.y - temp.h - temp.y;
+					playerVectY = 0;
+					std::cout << "0\n";
+				}
+				else if (overlap.B > ovelap.T && overlap.B > overlap.R && overlap.B > overlap.L) {
+					playerY -= player.y + player.h - temp.y;
+					playerVectY = 0;
+					jump = true;
+					std::cout << "1\n";
+				}
+				else if (overlap.R > overlap.T && overlap.R > overlap.B && overlap.R > overlap.L) {
+					playerX += player.x - temp.w - temp.x;
+					playerVectX = 0;
+					std::cout << "2\n";
+				}
+				else if (!(overlap.T == overlap.B == overlap.L == overlap.R)) {
+					playerX -= player.x + player.w - temp.x;
+					playerVectX = 0;
+					std::cout << "3\n";
+				}
+				else {
+					std::cout << "error\n";
+				}
+					
+			}
+		}
+	}
 }
 
 int main(int argc, char *argv[]) {
@@ -169,65 +208,7 @@ int main(int argc, char *argv[]) {
 			else if (jsonLVL["level"][i]["type"] == "dirt") {clipRect.y = 0;}
 			SDL_RenderCopy(rend, tex, &clipRect, &temp);
 			// colisions
-			if (player.x <= temp.x + temp.w && player.x >= temp.x || player.x + player.w <= temp.x + temp.w && player.x + player.w >= temp.x) {
-				if (player.y <= temp.y + temp.h && player.y >= temp.y || player.y + player.h <= temp.y + temp.h && player.y + player.h >= temp.y) {
-					std::cout << "collision\n";
-					overlap.T = player.y + player.h - temp.y;
-					overlap.B = player.y - temp.y - temp.h;
-					overlap.L = player.x + player.w - temp.x;
-					overlap.R = player.x - temp.x - temp.w;
-
-					std::cout << overlap.T << ", " << overlap.B << ", " << overlap.L << ", " << overlap.R << ", \n";
-
-					if (overlap.T > overlap.B && overlap.T > overlap.L && overlap.T > overlap.R) {
-						playerY += player.y - temp.h - temp.y;
-						playerVectY = 0;
-						std::cout << "0\n";
-					}
-					else if (overlap.B > ovelap.T && overlap.B > overlap.R && overlap.B > overlap.L) {
-						playerY -= player.y + player.h - temp.y;
-						playerVectY = 0;
-						jump = true;
-						std::cout << "1\n";
-					}
-					else if (overlap.R > overlap.T && overlap.R > overlap.B && overlap.R > overlap.L) {
-						playerX += player.x - temp.w - temp.x;
-						playerVectX = 0;
-						std::cout << "2\n";
-					}
-					else if (!(overlap.T == overlap.B == overlap.L == overlap.R)) {
-						playerX -= player.x + player.w - temp.x;
-						playerVectX = 0;
-						std::cout << "3\n";
-					}
-					else {
-						std::cout << "error\n";
-					}
-					
-					// if (player.y + player.h >= temp.y) {
-					// 	std::cout << "elevat\n";
-					// 	playerY = playerY + (player.y + player.h - temp.y);
-					// 	playerVectY = 0;
-					// 	jump = true;
-					// }
-					// else if (player.y <= temp.y + temp.h) {
-					// 	std::cout << "elevat\n";
-					// 	playerY = playerY + (player.y - temp.y - temp.h);
-					// 	playerVectY = 0;
-					// }
-					// if (player.x + player.w >= temp.x) {
-					// 	std::cout << "elevat\n";
-					// 	playerX = playerX + (player.x + player.w - temp.x);
-					// 	playerVectX = 0;
-					// }
-					// else if (player.x <= temp.x + temp.w) {
-					// 	std::cout << "elevat\n";
-					// 	playerX = playerX + (player.x - temp.x - temp.w);
-					// 	playerVectX = 0;
-					// }
-					
-				}
-			}
+			
 		}
 		player.x = round((SCREEN_WIDTH - player.w) / 2 + ofsetX - playerX);
 		player.y = round((SCREEN_HEIGHT - player.h) / 3 * 2 - playerY + ofsetY);
