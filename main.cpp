@@ -17,13 +17,23 @@ unsigned long lastTick;
 float FPS = 30;
 float rate = 10;
 
+struct {
+	uint16_t width;
+	uint16_t height;
+} screen;
+
 int SCREEN_WIDTH = 1000;
 int SCREEN_HEIGHT = 600;
 bool running = true;
 
-bool UPdown = false;
-bool LEFTdown = false;
-bool RIGHTdown = false;
+struct key{
+	bool UP;
+	bool LEFT;
+	bool RIGHT;
+	bool W;
+	bool a;
+	bool d;
+};
 
 float playerX;
 float playerY;
@@ -35,15 +45,6 @@ bool jump = false;
 
 float ofsetX;
 float ofsetY;
-
-struct {
-	int T;
-	int B;
-	int R;
-	int L;
-} overlap;
-
-bool flip = false;
 
 unsigned int len = 0;
 
@@ -95,43 +96,73 @@ int main(int argc, char *argv[]) {
             if (event.type == SDL_QUIT) {
             	return true;
             } 
-			else if (event.type == SDL_KEYDOWN) {
-                if (event.key.keysym.sym == SDLK_RIGHT || event.key.keysym.sym == SDLK_d) {
-                    RIGHTdown = true;
-				}
-				if (event.key.keysym.sym == SDLK_LEFT || event.key.keysym.sym == SDLK_a) {
-                    LEFTdown = true;
-				}
-				if (event.key.keysym.sym == SDLK_UP || event.key.keysym.sym == SDLK_w) {
-                    UPdown = true;
+			if (event.type == SDL_KEYDOWN) {
+				switch (event.key.keysym.sym) {
+					case SDLK_RIGHT: // || SDLK_d:
+						key.RIGHT = 1;
+						break;
+					
+					case SDLK_LEFT: // || SDLK_a:
+						key.LEFT = 1;
+						break;
+					
+					case SDLK_UP: // || SDLK_w:
+						key.UP = 1;
+						break;
+
+					default:
+						break;
 				}
             } 
 			else if (event.type == SDL_KEYUP) {
-				if (event.key.keysym.sym == SDLK_RIGHT || event.key.keysym.sym == SDLK_d) {
-                    RIGHTdown = false;
-				}
-				if (event.key.keysym.sym == SDLK_LEFT || event.key.keysym.sym == SDLK_a) {
-                    LEFTdown = false;
-				}
-				if (event.key.keysym.sym == SDLK_UP || event.key.keysym.sym == SDLK_w) {
-                    UPdown = false;
+				switch (event.key.keysym.sym) {
+					case SDLK_RIGHT: // || SDLK_d:
+						key.RIGHT = 0;
+						break;
+					
+					case SDLK_LEFT: // || SDLK_a:
+						key.LEFT = 0;
+						break;
+					
+					case SDLK_UP: // || SDLK_w:
+						key.UP = 0;
+						break;
+
+					default:
+						break;
 				}
 			}
             
         }
 		
 
-		if (UPdown == 1 && jump == true) {
+		if (key.UP == 1 && jump == 1) {
 			playerVectY = + 14;
 		}
 		jump = false;
 		
-		playerVectX = playerVectX - (RIGHTdown - LEFTdown) * (rate / 100);
+		playerVectX = playerVectX - (key.RIGHT - key.LEFT) * (rate / 100);
 		playerVectX *= 1 - rate / 100;
 
 		playerX += playerVectX * rate;
+		// for tile in tilesAroundPos(pos):
+		// 	if colliding(tile):
+		// 		if playerVectX * rate > 0:
+		// 			playerX = tile.pos.x - player.width
+		// 		else:
+		// 			playerX = tile.pos.x + tile.width
+		// 		playerVectX = 0
+
 		playerY += playerVectY / 10 * rate;
 		playerVectY += rate / -15;
+		// for tile in tilesAroundPos(pos):
+		// 	if colliding(tile):
+		// 		if playerVectY / 10 * rate > 0:
+		// 			playerY = tile.pos.y - player.height
+		// 		else:
+		// 			playerY = tile.pos.y + tile.height
+		// 		playerVectY = 0
+
 		ofsetX = (1 - rate / 300) * ofsetX + (rate / 300) * playerX;
 		ofsetY = (1 - rate / 350) * ofsetY + (rate / 350) * playerY;
 
@@ -150,12 +181,12 @@ int main(int argc, char *argv[]) {
 			jump = true;
 		}
 
-		playerVectX = playerVectX - (RIGHTdown - LEFTdown) * (rate / 100);
+		playerVectX = playerVectX - (key.RIGHT - key.LEFT) * (rate / 100);
 		playerVectX *= 1 - rate / 100;
 
 		SDL_RenderClear(rend);
-		if (LEFTdown - RIGHTdown == 1) {flip = 1;}
-		else if (LEFTdown - RIGHTdown == -1) {flip = 0;}
+		if (key.LEFT - key.RIGHT == 1) {flip = 1;}
+		else if (key.LEFT - key.RIGHT == -1) {flip = 0;}
 		if (flip == 1) {SDL_RenderCopyEx(rend, block, NULL, &player, 0, 0, SDL_FLIP_HORIZONTAL);}
 		else {SDL_RenderCopyEx(rend, block, NULL, &player, 0, 0, SDL_FLIP_NONE);}
 		len = jsonLVL["level"].size();
@@ -175,8 +206,8 @@ int main(int argc, char *argv[]) {
 		player.x = round((SCREEN_WIDTH - player.w) / 2 + ofsetX - playerX);
 		player.y = round((SCREEN_HEIGHT - player.h) / 3 * 2 - playerY + ofsetY);
 
-		if (LEFTdown - RIGHTdown == 1) {flip = 1;}
-		else if (LEFTdown - RIGHTdown == -1) {flip = 0;}
+		if (key.LEFT - key.RIGHT == 1) {player.flip = 1;}
+		else if (key.LEFT - key.RIGHT == -1) {player.flip = 0;}
 		if (flip == 1) {SDL_RenderCopyEx(rend, block, NULL, &player, 0, 0, SDL_FLIP_HORIZONTAL);}
 		else {SDL_RenderCopyEx(rend, block, NULL, &player, 0, 0, SDL_FLIP_NONE);}
 		SDL_RenderPresent(rend);
