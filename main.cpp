@@ -14,26 +14,26 @@
 using json = nlohmann::json;
 
 unsigned long lastTick;
-float FPS = 30;
-float rate = 10;
+double FPS = 30;
+double deltaTime = 10;
 
 struct {
-	uint16_t width;
-	uint16_t height;
+	int width = 1000;
+	int height = 600;
 } screen;
 
-int SCREEN_WIDTH = 1000;
-int SCREEN_HEIGHT = 600;
 bool running = true;
 
-struct key{
+struct {
 	bool UP;
 	bool LEFT;
 	bool RIGHT;
 	bool W;
 	bool a;
 	bool d;
-};
+} key;
+
+bool flip = false;
 
 float playerX;
 float playerY;
@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		std::cerr << "error initialising SDL, Error:" << SDL_GetError << std::endl;
 	}
-	SDL_Window* win = SDL_CreateWindow("Flashblade", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_RESIZABLE);
+	SDL_Window* win = SDL_CreateWindow("Flashblade", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screen.width, screen.height, SDL_WINDOW_RESIZABLE);
 
 	void SDL_SetWindowResizable(SDL_Window * window, SDL_bool resizable);
 
@@ -69,14 +69,14 @@ int main(int argc, char *argv[]) {
 	Uint32 render_flags = SDL_RENDERER_ACCELERATED;
 	SDL_Renderer* rend = SDL_CreateRenderer(win, -1, render_flags);
 	SDL_Surface* blocks;
-	SDL_Surface* playerIMG;
+	SDL_Surface* playerSprite;
 
 	blocks = IMG_Load(".\\data\\images\\blocks.png");
-	playerIMG = IMG_Load(".\\data\\images\\player.png");
+	playerSprite = IMG_Load(".\\data\\images\\player.png");
 	SDL_Texture* tex = SDL_CreateTextureFromSurface(rend, blocks);
-	SDL_Texture* block = SDL_CreateTextureFromSurface(rend, playerIMG);
+	SDL_Texture* block = SDL_CreateTextureFromSurface(rend, playerSprite);
 	SDL_FreeSurface(blocks);
-	SDL_FreeSurface(playerIMG);
+	SDL_FreeSurface(playerSprite);
 	SDL_Rect clipRect{0, 16, 16, 16};
 	SDL_Rect player; 
 
@@ -141,37 +141,39 @@ int main(int argc, char *argv[]) {
 		}
 		jump = false;
 		
-		playerVectX = playerVectX - (key.RIGHT - key.LEFT) * (rate / 100);
-		playerVectX *= 1 - rate / 100;
-
-		playerX += playerVectX * rate;
+		playerVectX = playerVectX - (key.RIGHT - key.LEFT) * (deltaTime / 100);
+		playerX += playerVectX * deltaTime;
+		playerVectX *= 1 - deltaTime / 50;
+		playerX += playerVectX * deltaTime;
 		// for tile in tilesAroundPos(pos):
 		// 	if colliding(tile):
-		// 		if playerVectX * rate > 0:
+		// 		if playerVectX * deltaTime > 0:
 		// 			playerX = tile.pos.x - player.width
 		// 		else:
 		// 			playerX = tile.pos.x + tile.width
 		// 		playerVectX = 0
 
-		playerY += playerVectY / 10 * rate;
-		playerVectY += rate / -15;
+		playerY += playerVectY / 20 * deltaTime;
+		playerVectY += deltaTime / -15;
+		playerY += playerVectY / 20 * deltaTime;
+
 		// for tile in tilesAroundPos(pos):
 		// 	if colliding(tile):
-		// 		if playerVectY / 10 * rate > 0:
+		// 		if playerVectY / 10 * deltaTime > 0:
 		// 			playerY = tile.pos.y - player.height
 		// 		else:
 		// 			playerY = tile.pos.y + tile.height
 		// 		playerVectY = 0
 
-		ofsetX = (1 - rate / 300) * ofsetX + (rate / 300) * playerX;
-		ofsetY = (1 - rate / 350) * ofsetY + (rate / 350) * playerY;
+		ofsetX = (1 - deltaTime / 300) * ofsetX + (deltaTime / 300) * playerX;
+		ofsetY = (1 - deltaTime / 350) * ofsetY + (deltaTime / 350) * playerY;
 
 		// collision::detect();
 
-		SDL_GetWindowSizeInPixels(win, &SCREEN_WIDTH, &SCREEN_HEIGHT);
+		SDL_GetWindowSizeInPixels(win, &screen.width, &screen.height);
 		
-		player.x = round((SCREEN_WIDTH - player.w) / 2 + ofsetX - playerX);
-		player.y = round((SCREEN_HEIGHT - player.h) / 3 * 2 - playerY + ofsetY);
+		player.x = round((screen.width - player.w) / 2 + ofsetX - playerX);
+		player.y = round((screen.height - player.h) / 3 * 2 - playerY + ofsetY);
 
 		// player.y = round(playerY); // testing
 
@@ -181,8 +183,8 @@ int main(int argc, char *argv[]) {
 			jump = true;
 		}
 
-		playerVectX = playerVectX - (key.RIGHT - key.LEFT) * (rate / 100);
-		playerVectX *= 1 - rate / 100;
+		playerVectX = playerVectX - (key.RIGHT - key.LEFT) * (deltaTime / 100);
+		playerVectX *= 1 - deltaTime / 100;
 
 		SDL_RenderClear(rend);
 		if (key.LEFT - key.RIGHT == 1) {flip = 1;}
@@ -203,20 +205,20 @@ int main(int argc, char *argv[]) {
 			}
 			
 		}
-		player.x = round((SCREEN_WIDTH - player.w) / 2 + ofsetX - playerX);
-		player.y = round((SCREEN_HEIGHT - player.h) / 3 * 2 - playerY + ofsetY);
+		player.x = round((screen.width - player.w) / 2 + ofsetX - playerX);
+		player.y = round((screen.height - player.h) / 3 * 2 - playerY + ofsetY);
 
-		if (key.LEFT - key.RIGHT == 1) {player.flip = 1;}
-		else if (key.LEFT - key.RIGHT == -1) {player.flip = 0;}
+		if (key.LEFT - key.RIGHT == 1) {flip = 1;}
+		else if (key.LEFT - key.RIGHT == -1) {flip = 0;}
 		if (flip == 1) {SDL_RenderCopyEx(rend, block, NULL, &player, 0, 0, SDL_FLIP_HORIZONTAL);}
 		else {SDL_RenderCopyEx(rend, block, NULL, &player, 0, 0, SDL_FLIP_NONE);}
 		SDL_RenderPresent(rend);
 
 		SDL_Delay(1000/72);
 
-		rate = SDL_GetTicks() - lastTick;
+		deltaTime = SDL_GetTicks() - lastTick;
 		lastTick = SDL_GetTicks();
-		FPS = 0.9 * FPS + 100 / rate;
+		FPS = 0.9 * FPS + 100 / deltaTime;
 
 		// std::cout << FPS << ",  "; // testing framerate
 		
