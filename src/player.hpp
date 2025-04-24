@@ -5,6 +5,4 @@ class playerClass {
         double vectX;
         double vectY;
         bool flip = false;
-}
-
-playerClass player;
+};
