@@ -1,7 +1,5 @@
-#define LEFTdir 0x0
-#define RIGHTdir 0x1
-#define UPdir 0x2
-#define DOWNdir 0x3
+#define HORIZONTAL 0x0
+#define VERTICAL 0x1
 
 
 char direction = NULL;
@@ -21,7 +19,7 @@ namespace collision{
         return(0);
     }
     char dir(int x, int y, int x2, int y2, int vectX, int vectY) {
-        direction = LEFTdir;
+        direction = HORIZONTAL;
         return(0);
     }
 }

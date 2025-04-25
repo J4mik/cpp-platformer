@@ -172,7 +172,7 @@ int main(int argc, char *argv[]) {
 				jump = 1;
 				std::cout << "collision\n";
 				collision::dir(player.x, player.y, temp.x, temp.y, playerVectX, playerVectY);
-				if (direction == LEFTdir) {std::cout << "testing\n";}
+				if (direction == HORIZONTAL) {std::cout << "testing\n";}
 				if (playerVectX >= 0) {
 					playerX -= temp.x + temp.w - player.x + 0.1;
 					playerVectX = 0;
