@@ -33,6 +33,11 @@ struct {
 	bool d;
 } key;
 
+struct {
+	bool vertical;
+	bool horizontal;
+} collide;
+
 bool flip = false;
 
 double playerX;
@@ -169,36 +174,45 @@ int main(int argc, char *argv[]) {
 			temp.x = round(int(jsonLVL["level"][i]["pos"][0]) * 48 + ofsetX);
 			temp.y = round(-int(jsonLVL["level"][i]["pos"][1]) * 48 + ofsetY);
 			if (collision::detect(player.x, player.y, temp.x, temp.y)) {
-				jump = 1;
 				std::cout << "collision\n";
-				collision::dir(player.x, player.y, temp.x, temp.y, playerVectX, playerVectY);
-				if (direction == HORIZONTAL) {std::cout << "testing\n";}
-				if (playerVectX >= 0) {
-					playerX -= temp.x + temp.w - player.x + 0.1;
+				if (collision::dir(player.x, player.y, temp.x, temp.y, playerVectX, playerVectY) == HORIZONTAL) {
+					if (playerVectX > 0) {
+						playerX -= temp.x + temp.w - player.x + 1;
+					}
+					else if (playerVectX < 0) {
+						playerX -= temp.x - (player.x + player.w) - 1;
+					}
 					playerVectX = 0;
+					collide.horizontal = 0
 				}
-				else if (playerVectX <= 0) {
-					playerX -= temp.x - (player.x + player.w) - 0.1;
-					playerVectX = 0;
+			else {
+				if (playerVectY > 0) {
+						playerY -= temp.y + temp.h - player.y + 1;
+					}
+					else if (playerVectY < 0) {
+						playerY -= temp.y - (player.y + player.h);
+						jump = 1;
+					}
+					playerVectY = 0;
+					collide.vertical = 0
 				}
-				else {
-					jump = 0;
-				}
-				break;
+				
 			}
 		}
 
-		if (!jump) {
-		playerX += playerVectX * deltaTime / 3;
-		playerVectX *= 1 / (1 +  deltaTime / 50);
-		playerX += playerVectX * deltaTime / 3;
-		playerY += playerVectY / 20 * deltaTime;
-		playerVectY += deltaTime / -15;
-		playerY += playerVectY / 20 * deltaTime;
+		if (collide.horizontal) {
+			playerX += playerVectX * deltaTime / 3;
+			playerVectX *= 1 / (1 +  deltaTime / 50);
+			playerX += playerVectX * deltaTime / 3;
 		}
-		else {
+		if (collide.vertical) {
+			playerY += playerVectY / 20 * deltaTime;
+			playerVectY += deltaTime / -15;
+			playerY += playerVectY / 20 * deltaTime;
+		}
+		collide.vertical = 1;
+		collide.horizontal = 1;
 
-		}
 
 
 		// for tile in tilesAroundPos(pos):
@@ -259,7 +273,7 @@ int main(int argc, char *argv[]) {
 		else {SDL_RenderCopyEx(rend, block, NULL, &player, 0, 0, SDL_FLIP_NONE);}
 		SDL_RenderPresent(rend);
 
-		SDL_Delay(1000/72);
+		// SDL_Delay(1000/72);
 
 		
 

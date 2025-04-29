@@ -1,8 +1,8 @@
+#include <cstddef>
+#include <cmath>
+
 #define HORIZONTAL 0x0
 #define VERTICAL 0x1
-
-
-char direction = NULL;
 
 namespace collision{
     bool detect(int x, int y, int x2, int y2) {
@@ -19,8 +19,22 @@ namespace collision{
         return(0);
     }
     char dir(int x, int y, int x2, int y2, int vectX, int vectY) {
-        direction = HORIZONTAL;
-        return(0);
+        struct {
+            int x;
+            int x2;
+            int y;
+            int y2;
+        } overlap;
+        overlap.x = abs((x + 21 - x2)); // * (abs(vectX) + 1));
+        overlap.x2 = abs((x2 + 48 - x)); // * (abs(vectX) + 1));
+        overlap.y = abs((y + 12 - y2)); // * (abs(vectY) + 1));
+        overlap.y2 = abs((y2 + 48 - y)); // * (abs(vectY) + 1));
+        if ((overlap.x > overlap.y && overlap.x > overlap.y2) || (overlap.x2 > overlap.y && overlap.x2 > overlap.y2)) {
+            return(HORIZONTAL);
+        }
+        else {
+            return(VERTICAL);
+        }
     }
 }
 
