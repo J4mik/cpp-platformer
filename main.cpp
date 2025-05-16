@@ -33,10 +33,12 @@ struct {
 	bool d;
 } key;
 
+int lowest = 0;
+
 struct {
-	bool vertical;
-	bool horizontal;
-} collide;
+	int x;
+	int y;
+} move;
 
 bool flip = false;
 
@@ -51,14 +53,18 @@ bool jump = false;
 double ofsetX = 0;
 double ofsetY = 0;
 
-unsigned int len = 0;
+std::ifstream ifs("test.json");
+json jsonLVL = json::parse(ifs);
+
+json level = jsonLVL["level"];
+unsigned int len = jsonLVL["level"].size();
+
+
+
 
 int main(int argc, char *argv[]) {
-
-	std::ifstream ifs("test.json");
-    json jsonLVL = json::parse(ifs);
     
-	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
+	if (SDL_Init(SDL_INIT_EVERYTHING)) {
 		std::cerr << "error initialising SDL, Error:" << SDL_GetError << std::endl;
 	}
 	SDL_Window* win = SDL_CreateWindow("Flashblade", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screen.width, screen.height, SDL_WINDOW_RESIZABLE);
@@ -149,9 +155,9 @@ int main(int argc, char *argv[]) {
 		jump = 0;
 		
 		playerVectX = playerVectX - (key.RIGHT - key.LEFT) * (deltaTime / 100);
-		// playerX += playerVectX * deltaTime / 3;
-		// playerVectX *= 1 - deltaTime / 150;
-		// playerX += playerVectX * deltaTime / 3;
+			playerX += playerVectX * deltaTime / 3;
+			playerVectX *= 1 / (1 +  deltaTime / 50);
+			playerX += playerVectX * deltaTime / 3;
 		// // for tile in tilesAroundPos(pos):
 		// // 	if colliding(tile):
 		// // 		if playerVectX * deltaTime > 0:
@@ -160,58 +166,40 @@ int main(int argc, char *argv[]) {
 		// // 			playerX = tile.pos.x + tile.width
 		// // 		playerVectX = 0
 
-		// playerY += playerVectY / 20 * deltaTime;
-		// playerVectY += deltaTime / -15;
-		// playerY += playerVectY / 20 * deltaTime;
-		
-		player.x = round((screen.width - player.w) / 2 + ofsetX - playerX);
-		player.y = round((screen.height - player.h) / 3 * 2 - playerY + ofsetY);
+		playerY += playerVectY / 20 * deltaTime;
+		playerVectY += deltaTime / -15;
+		playerY += playerVectY / 20 * deltaTime;
+	
 
-		len = jsonLVL["level"].size();
-		json level = jsonLVL["level"];
+		lowest = 32000;
+		move.x = 0;
+		move.y = 0;
 
 		for (unsigned int i = 0; i < len; ++i) {
 			temp.x = round(int(jsonLVL["level"][i]["pos"][0]) * 48 + ofsetX);
 			temp.y = round(-int(jsonLVL["level"][i]["pos"][1]) * 48 + ofsetY);
-			if (collision::detect(player.x, player.y, temp.x, temp.y)) {
-				std::cout << "collision\n";
-				if (collision::dir(player.x, player.y, temp.x, temp.y, playerVectX, playerVectY) == HORIZONTAL) {
-					if (playerVectX > 0) {
-						playerX -= temp.x + temp.w - player.x + 1;
-					}
-					else if (playerVectX < 0) {
-						playerX -= temp.x - (player.x + player.w) - 1;
-					}
-					playerVectX = 0;
-					collide.horizontal = 0
-				}
-			else {
-				if (playerVectY > 0) {
-						playerY -= temp.y + temp.h - player.y + 1;
-					}
-					else if (playerVectY < 0) {
-						playerY -= temp.y - (player.y + player.h);
-						jump = 1;
-					}
-					playerVectY = 0;
-					collide.vertical = 0
-				}
-				
+			if (!collision::detect(player.x + j, player.y + n, temp.x, temp.y)) {
 			}
+
+			playerX += move.x;
+			playerY += move.y;
 		}
 
-		if (collide.horizontal) {
-			playerX += playerVectX * deltaTime / 3;
-			playerVectX *= 1 / (1 +  deltaTime / 50);
-			playerX += playerVectX * deltaTime / 3;
-		}
-		if (collide.vertical) {
-			playerY += playerVectY / 20 * deltaTime;
-			playerVectY += deltaTime / -15;
-			playerY += playerVectY / 20 * deltaTime;
-		}
-		collide.vertical = 1;
-		collide.horizontal = 1;
+		player.x = round((screen.width - player.w) / 2 + ofsetX - playerX);
+		player.y = round((screen.height - player.h) / 3 * 2 - playerY + ofsetY);
+
+		// if (collide.horizontal) {
+		// 	playerX += playerVectX * deltaTime / 3;
+		// 	playerVectX *= 1 / (1 +  deltaTime / 50);
+		// 	playerX += playerVectX * deltaTime / 3;
+		// }
+		// if (collide.vertical) {
+		// 	playerY += playerVectY / 20 * deltaTime;
+		// 	playerVectY += deltaTime / -15;
+		// 	playerY += playerVectY / 20 * deltaTime;
+		// }
+		// collide.vertical = 1;
+		// collide.horizontal = 1;
 
 
 
